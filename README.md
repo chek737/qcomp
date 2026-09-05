@@ -1,78 +1,106 @@
 # QuantumCraft: The Blockverse Simulator
 
-![QuantumCraft](https://github.com/Chekoon777/qcomp/assets/113446650/e49776c0-0e93-4898-a676-f5de9eb44d0e)
-------------------------
+Minecraft 블록을 양자 게이트로 사용해 회로를 직접 배치하고, 복소수
+확률 진폭의 전파와 측정을 게임 안에서 확인하는 Java/Bukkit 기반 교육용
+양자 회로 시뮬레이터입니다.
 
-### Group QD
-### Byungchul Kim, Chaehoon Park, Nohyoon Park, Taewoo Lee
-------------------------
+![Minecraft 안에 구현한 QuantumCraft 회로](https://github.com/Chekoon777/qcomp/assets/113446650/e49776c0-0e93-4898-a676-f5de9eb44d0e)
 
-## Source Code Directory
+## 왜 Minecraft인가
 
+행렬과 복소수만으로 양자 회로를 처음 배우면 gate의 연결과 상태 변화를
+직관적으로 추적하기 어렵습니다. QuantumCraft는 블록 위치와 연결을 회로
+topology로 사용해, 플레이어가 회로를 직접 걸어 다니며 수정하고 각 지점의
+상태를 확인하도록 설계했습니다.
 
-src/main/java/qd.qcomp.qcompplugin
+## 핵심 기능
 
+- X, Y, Z, Hadamard 및 사용자 정의 2×2 gate
+- Apache Commons Math `Complex`를 이용한 qubit 진폭과 matrix 연산
+- 블록 배치 방향을 따라 실시간으로 전파되는 quantum state
+- control signal을 이용한 conditional gate와 entanglement 표현
+- Born rule을 바탕으로 한 measurement 분기
+- 블록 클릭 시 각 위치의 `|0⟩`, `|1⟩` 계수와 제어 상태 표시
+- 잘못된 연결과 블록 제거 시 계산 상태 정리
 
-## Source Code Files
+```mermaid
+flowchart LR
+    A["Minecraft block"] --> B["Gate mapping"]
+    B --> C["Complex qubit state"]
+    C --> D["Propagation / control"]
+    D --> E["Measurement"]
+```
 
-Qcomp.java
-MetaManager.java
-Qstate.java
-Qubit.java
-Gate.java
+## 블록과 연산
 
+| 블록 | 역할 |
+|---|---|
+| Coal | qubit 시작점 |
+| Bone | 측정 종점 |
+| Emerald / Copper / Diamond / Gold | X / Y / Z / H gate |
+| Quartz | 사용자 정의 gate A |
+| Redstone | control signal |
+| Stained Glass | 상태 전파 경로 |
 
-## Goals
+## 명령어
 
-Understanding quantum computing and circuits in an interactive, visual Format
-Make it more accessible and comprehensible to a broader audience
-Provide an engaging learning experience
-Inspire future generations of scientists and programmers to explore the fascinating world of quantum computing
+| 명령 | 설명 |
+|---|---|
+| `/qskit` | 회로 구성에 필요한 블록 kit 지급 |
+| `/qsinit <a+bi> <c+di>` | 초기 qubit 상태 설정 및 정규화 |
+| `/customgate <a+bi> <c+di> <e+fi> <g+hi>` | 사용자 정의 2×2 gate 설정 |
 
+## 실행
 
-## Implemented Features
+요구 사항:
 
-1. Real-Time Circuit Modification
+- JDK 8+
+- Maven
+- Spigot 1.20.2 호환 서버
 
-2. Displays Quantum State on Every Circuit Blocks<br /><br />
-coef of zero ket and one ket shows probability of measuring 0 and 1
+```bash
+mvn package
+```
 
-3. Ifzero and Ifone Viewable When Block Clicked on Every Circuit Blocks<br /><br />
-Ifzero and Ifone are lists that store quantum states of other qubits that are controlled by this qubit, when this qubit is zero and one respectively.<br />
-When Measurement, either Ifzero or Ifone is propagated into other qubits, in the reverse order of qubits becoming related.
+생성된 `target/qcompplugin-1.0-SNAPSHOT.jar`를 Spigot 서버의 `plugins/`
+디렉터리에 복사하고 서버를 시작합니다. 월드 이름은 코드에서 `world`로
+설정되어 있습니다.
 
-4. Commands:<br /><br />
-/qskit: Gives player blocks for constructing a quantum circuit<br />
-/qsinit: Changes the initial quantum state into a custom state<br />
-/customgate: Edits the entries of custom quantum gate A
+## 예시 회로
 
+### Bell-state 형태의 entanglement
 
-## Example of What You Can Make
+<img width="900" alt="Quantum entanglement circuit" src="https://github.com/Chekoon777/qcomp/assets/113446650/93c30cab-bd03-45a3-a4bf-b48b2fd7184b">
 
-### Basic Quantum Entanglement Circuit
+두 qubit의 `|0⟩`과 `|1⟩` 계수가 약 `1/√2`로 표시되며, 블록을
+클릭하면 측정 결과별로 영향을 받는 다른 qubit 상태를 확인할 수 있습니다.
 
-<img width="1280" alt="3" src="https://github.com/Chekoon777/qcomp/assets/113446650/93c30cab-bd03-45a3-a4bf-b48b2fd7184b">
+### Deutsch 문제의 quantum oracle
 
-Above image is the in-game circuit implementation. At both 0th qubit and 1st qubit, 0 ket and 1 ket has coefficient of 0.717, which is 1/sqrt(2), showing 50:50 probability of measuring 0 and 1.
+<p>
+  <img width="48%" alt="Constant oracle" src="https://github.com/Chekoon777/qcomp/assets/113446650/50c91cb6-933f-4364-a0e9-69e2a1ab2475">
+  <img width="48%" alt="Balanced oracle" src="https://github.com/Chekoon777/qcomp/assets/113446650/901098e8-fa59-4a81-953a-6c8963a21c7a">
+</p>
 
-<img width="656" alt="4" src="https://github.com/Chekoon777/qcomp/assets/113446650/3e8a481c-7b31-4057-a32a-135de6c96c44">
+constant/balanced oracle를 블록으로 구성해 최종 입력 qubit의 측정 확률이
+어떻게 달라지는지 비교할 수 있습니다.
 
-When a certain qubit is clicked, a window appear showing other affected qubits. 'Ifzero' and 'Ifone' shows the state of other qubit after measuring this qubit as zero or one, respectively. This calculation is based on Born's Rule.
+## 코드 구조
 
-### Quantum Oracle in Deutsch's Problem
+| 파일 | 책임 |
+|---|---|
+| `Qcomp.java` | Bukkit event, command, 회로 탐색과 상태 전파 |
+| `Qubit.java` | 복소수 진폭, 정규화, 측정 |
+| `Qstate.java` | 데이터/control state와 조건부 영향 관계 |
+| `Gate.java` | 표준 및 사용자 정의 gate matrix |
+| `MetaManager.java` | Minecraft block metadata 관리 |
 
-- Quantum Oracle with constant function
+## 팀
 
-<img width="1280" alt="1" src="https://github.com/Chekoon777/qcomp/assets/113446650/50c91cb6-933f-4364-a0e9-69e2a1ab2475">
+Group QD — Byungchul Kim, Chaehoon Park, Nohyoon Park, Taewoo Lee
 
-In this example, the oracle function is constant (f(0)=1, f(1)=1). Therefore, the input state at the end has still 100% probability of measuring zero. <br />
+## 범위와 한계
 
-- Quantum Oracle with balanced function
-
-<img width="1280" alt="2" src="https://github.com/Chekoon777/qcomp/assets/113446650/901098e8-fa59-4a81-953a-6c8963a21c7a">
-
-In this example, the oracle function is balanced (f(1)=0, f(0)=1). Therefore, the input state at the end has still 100% probability of measuring one.<br />
-
-- Deutsch-Josza Algorithm
-
-When quantum oracle is expanded into one that get 3 or more input qubits, quantum oracle of Deutsch-Josza is implemented. You will be able to find the input state after applying quantum oracle remaining all zero when if the oracle function is constant, and changing into non-zero when if the oracle function is balanced.
+QuantumCraft는 범용 양자 컴퓨터가 아니라 학습용 회로 시뮬레이터입니다.
+대규모 register, noise model, 실제 quantum hardware backend는 지원하지
+않습니다.
